@@ -113,34 +113,47 @@
     let dIneditos = [], dEspelho = [];
 
     async function buscar50Resultados() {
-        const btn = document.getElementById('btnSync');
-        const bar = document.getElementById('progBar');
-        const container = document.getElementById('progContainer');
-        const txt = document.getElementById('historico');
-        btn.disabled = true;
-        container.style.display = "block";
-        txt.value = "";
-        
+    const btn = document.getElementById('btnSync');
+    const bar = document.getElementById('progBar');
+    const container = document.getElementById('progContainer');
+    const txt = document.getElementById('historico');
+    btn.disabled = true;
+    container.style.display = "block";
+    
+    // Usando um proxy para evitar erro de CORS/Conexão
+    const proxy = "https://api.allorigins.win/get?url=";
+    const apiUrl = encodeURIComponent("https://loteriacaixa-api.herokuapp.com/api/lotomania");
+
         try {
-            const respInicial = await fetch('https://loteriacaixa-api.herokuapp.com/api/lotomania');
-            const dadosIniciais = await respInicial.json();
+            const respInicial = await fetch(proxy + apiUrl);
+            const data = await respInicial.json();
+            const dadosIniciais = JSON.parse(data.contents);
             let ultimo = dadosIniciais[0].concurso;
             let acumulado = "";
 
             for (let i = 0; i < 50; i++) {
                 try {
-                    const resp = await fetch(`https://loteriacaixa-api.herokuapp.com/api/lotomania/${ultimo - i}`);
-                    const sorteio = await resp.json();
-                    if(sorteio.dezenas) acumulado += sorteio.dezenas.join(" ") + "\n";
+                    const urlConc = encodeURIComponent(`https://loteriacaixa-api.herokuapp.com/api/lotomania/${ultimo - i}`);
+                    const r = await fetch(proxy + urlConc);
+                    const d = await r.json();
+                    const sorteio = JSON.parse(d.contents);
+                
+                    if(sorteio.dezenas) {
+                        acumulado += sorteio.dezenas.join(" ") + "\n";
+                    }
+                
                     let p = Math.round(((i + 1) / 50) * 100);
                     bar.style.width = p + "%";
                     bar.innerText = `Sincronizando: ${p}%`;
                 } catch (e) { continue; }
             }
             txt.value = acumulado;
-            alert("Base de 50 concursos pronta!");
-        } catch (error) { alert("Erro de conexão."); }
-        finally { btn.disabled = false; }
+            alert("Base de 50 concursos sincronizada via Proxy!");
+        } catch (error) {
+            alert("O servidor de dados está fora do ar. Por favor, cole os resultados manualmente para continuar a análise.");
+        } finally {
+            btn.disabled = false;
+        }
     }
 
     function processarAnalise() {
