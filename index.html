@@ -12,6 +12,7 @@
             --white: #ffffff;
             --accent: #28a745;
             --blue: #007bff;
+            --gray: #6c757d;
         }
 
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg); color: var(--secondary); margin: 0; padding: 20px; }
@@ -33,7 +34,7 @@
         button:hover { opacity: 0.9; transform: translateY(-1px); }
 
         .grid-results { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .game-box { background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 5px solid var(--primary); }
+        .game-box { background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 5px solid var(--primary); margin-bottom: 15px; }
         .num-display { font-family: 'Courier New', monospace; font-weight: bold; font-size: 16px; color: #d46d16; word-break: break-all; margin-top: 10px; }
 
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
@@ -42,7 +43,14 @@
 
         .prob-high { color: var(--accent); font-weight: bold; }
         .simulacao-area { background: #e3f2fd; border: 1px solid #bbdefb; }
+        .placar-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center; margin-top: 20px; }
         .placar { font-size: 24px; font-weight: bold; color: var(--blue); }
+
+        @media (max-width: 768px) {
+            .grid-results { grid-template-columns: 1fr; }
+            .btn-group { grid-template-columns: 1fr; }
+            .placar-grid { grid-template-columns: 1fr 1fr; }
+        }
     </style>
 </head>
 <body>
@@ -50,12 +58,12 @@
 <div class="container">
     <header>
         <h1>Lotomania Intelligence</h1>
-        <p>Análise de Frequência, Pressão de Atraso e Mix de Extremos</p>
+        <p>Análise de Frequência, Pressão e Números Inéditos</p>
     </header>
 
     <div class="section">
-        <h3>1. Dados Históricos (Últimos 10 Jogos)</h3>
-        <textarea id="historico" placeholder="Cole os resultados aqui (um por linha ou separados por espaço)..."></textarea>
+        <h3>1. Dados Históricos (Últimos Jogos)</h3>
+        <textarea id="historico" placeholder="Cole aqui os últimos resultados (uma linha por sorteio ou números separados por espaço)..."></textarea>
         <div class="btn-group">
             <button class="btn-primary" onclick="processarAnalise()">Analisar Tudo</button>
             <button class="btn-secondary" onclick="limpar()">Limpar Dados</button>
@@ -66,7 +74,7 @@
     <div id="painelAnalise" style="display:none;">
         <div class="grid-results">
             <div class="section">
-                <h3>📊 Tabela de Pressão (Frios)</h3>
+                <h3>📊 Ranking de Pressão (Dezenas Atrasadas)</h3>
                 <table>
                     <thead>
                         <tr>
@@ -81,119 +89,148 @@
             </div>
 
             <div class="section">
-                <h3>🎯 Jogos Gerados</h3>
+                <h3>🎯 Jogos Estratégicos Gerados</h3>
                 
                 <div class="game-box" style="border-color: #ffc107;">
-                    <strong>🔥 ESTRATÉGIA QUENTE (Para 20 Acertos)</strong>
+                    <strong>🔥 ESTRATÉGIA QUENTE (Mais Frequentes)</strong>
                     <div id="jogoQuente" class="num-display"></div>
                 </div>
-                <br>
+
                 <div class="game-box" style="border-color: #17a2b8;">
-                    <strong>❄️ ESTRATÉGIA FRIA (Para 0 Acertos)</strong>
+                    <strong>❄️ ESTRATÉGIA FRIA (Menos Frequentes)</strong>
                     <div id="jogoFrio" class="num-display"></div>
                 </div>
-                <br>
+
                 <div class="game-box" style="border-color: var(--accent);">
-                    <strong>⚖️ ESTRATÉGIA MISTA (Balanceada)</strong>
+                    <strong>⚖️ ESTRATÉGIA MISTA (Equilibrada)</strong>
                     <div id="jogoMisto" class="num-display"></div>
+                </div>
+
+                <div class="game-box" style="border-color: var(--gray);">
+                    <strong>🌑 ESTRATÉGIA INÉDITOS (Aposta no Atraso Máximo)</strong>
+                    <div id="jogoIneditos" class="num-display"></div>
                 </div>
             </div>
         </div>
 
         <div class="section simulacao-area">
             <h3>🧪 Simulador de Performance</h3>
-            <p>Insira um novo resultado para conferir como os jogos acima se sairiam:</p>
+            <p>Insira um novo sorteio para testar as estratégias acima:</p>
             <input type="text" id="novoResultado" style="width: 70%; padding: 10px; border-radius: 5px; border: 1px solid #ccc;" placeholder="Ex: 01 10 25 33...">
             <button class="btn-secondary" style="width: 25%;" onclick="simular()">Conferir</button>
             
-            <div id="placarSimulacao" style="display:none; margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; text-align: center;">
+            <div id="placarSimulacao" class="placar-grid" style="display:none;">
                 <div>Quente: <div id="resQ" class="placar">0</div></div>
                 <div>Frio: <div id="resF" class="placar">0</div></div>
                 <div>Misto: <div id="resM" class="placar">0</div></div>
+                <div>Inéditos: <div id="resI" class="placar">0</div></div>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    let dQuente = [], dFrio = [], dMisto = [];
+    let dQuente = [], dFrio = [], dMisto = [], dIneditos = [];
 
     function processarAnalise() {
         const texto = document.getElementById('historico').value;
-        const numeros = texto.match(/\d+/g);
-        if (!numeros || numeros.length < 20) return alert("Insira dados suficientes!");
+        const numerosEncontrados = texto.match(/\d+/g);
+        
+        if (!numerosEncontrados || numerosEncontrados.length < 20) {
+            return alert("Por favor, insira pelo menos um resultado completo (20 números)!");
+        }
 
         const freq = Array(100).fill(0);
-        const ultimoPos = Array(100).fill(10); // Atraso máximo padrão
+        const ultimoPos = Array(100).fill(20); // Valor de atraso padrão
         
-        // Simular linhas de concursos
         const linhas = texto.trim().split('\n');
         linhas.forEach((linha, index) => {
             const dezenas = linha.match(/\d+/g);
-            if(dezenas) dezenas.forEach(d => {
-                let n = parseInt(d);
-                if(n < 100) {
-                    freq[n]++;
-                    if(index < ultimoPos[n]) ultimoPos[n] = index;
-                }
-            });
+            if(dezenas) {
+                dezenas.forEach(d => {
+                    let n = parseInt(d);
+                    if(n < 100) {
+                        freq[n]++;
+                        // O index representa o quão longe o número apareceu (0 = concurso mais recente)
+                        if(index < ultimoPos[n]) ultimoPos[n] = index;
+                    }
+                });
+            }
         });
 
-        // Montar Ranking
+        // Montar Ranking Matemático
         const ranking = [];
         for(let i=0; i<100; i++) {
-            let p = (ultimoPos[i] * 12) - (freq[i] * 4) + 10;
+            // Cálculo de "Pressão": Peso maior para atraso e frequência moderada
+            let p = (ultimoPos[i] * 15) - (freq[i] * 5) + 10;
             ranking.push({
                 n: i.toString().padStart(2, '0'),
                 f: freq[i],
                 a: ultimoPos[i],
-                p: Math.min(Math.max(p, 5), 98)
+                p: Math.min(Math.max(p, 5), 99)
             });
         }
 
-        // 1. Jogo Quente (Os 50 que mais saíram)
-        const rFreq = [...ranking].sort((a,b) => b.f - a.f);
-        dQuente = rFreq.slice(0, 50).map(x => x.n).sort();
+        // Ordenações para as estratégias
+        const rPorFrequencia = [...ranking].sort((a,b) => b.f - a.f);
+        const rPorPressao = [...ranking].sort((a,b) => b.p - a.p);
+        const rPorIneditos = [...ranking].sort((a,b) => a.f - b.f || b.a - a.a);
 
-        // 2. Jogo Frio (Os 50 que menos saíram)
-        dFrio = rFreq.slice(50, 100).map(x => x.n).sort();
+        // 1. GERAÇÃO: QUENTE (Top 50 Frequência)
+        dQuente = rPorFrequencia.slice(0, 50).map(x => x.n).sort();
 
-        // 3. Jogo Misto (35 Quentes + 15 Frios de alta pressão)
-        const rPressao = [...ranking].sort((a,b) => b.p - a.p);
-        dMisto = [...rFreq.slice(0, 35).map(x => x.n), ...rPressao.slice(0, 15).map(x => x.n)].sort();
-        // Remover duplicatas se houver e completar 50
-        dMisto = [...new Set(dMisto)].slice(0, 50).sort();
+        // 2. GERAÇÃO: FRIO (Bottom 50 Frequência)
+        dFrio = rPorFrequencia.slice(50, 100).map(x => x.n).sort();
 
-        // Exibir na tela
+        // 3. GERAÇÃO: MISTO (30 Quentes + 20 de Alta Pressão)
+        let tempMisto = [...rPorFrequencia.slice(0, 30).map(x => x.n), ...rPorPressao.slice(0, 25).map(x => x.n)];
+        dMisto = [...new Set(tempMisto)].slice(0, 50).sort();
+
+        // 4. GERAÇÃO: INÉDITOS (Frequência Zero ou Mínima + Maior Atraso)
+        dIneditos = rPorIneditos.slice(0, 50).map(x => x.n).sort();
+
+        // Exibir resultados na tela
         document.getElementById('jogoQuente').innerText = dQuente.join(" ");
         document.getElementById('jogoFrio').innerText = dFrio.join(" ");
         document.getElementById('jogoMisto').innerText = dMisto.join(" ");
+        document.getElementById('jogoIneditos').innerText = dIneditos.join(" ");
         
-        // Tabela
+        // Preencher Tabela de Pressão
         const corpo = document.getElementById('tabelaCorpo');
         corpo.innerHTML = "";
-        rPressao.slice(0, 10).forEach(item => {
-            corpo.innerHTML += `<tr><td>${item.n}</td><td>${item.f}</td><td>${item.a}j</td><td class="prob-high">${item.p}%</td></tr>`;
+        rPorPressao.slice(0, 10).forEach(item => {
+            corpo.innerHTML += `<tr>
+                <td><strong>${item.n}</strong></td>
+                <td>${item.f}</td>
+                <td>${item.a}j</td>
+                <td class="prob-high">${item.p}%</td>
+            </tr>`;
         });
 
         document.getElementById('painelAnalise').style.display = "block";
     }
 
     function simular() {
-        const sorteio = document.getElementById('novoResultado').value.match(/\d+/g);
-        if(!sorteio) return alert("Insira o resultado!");
+        const input = document.getElementById('novoResultado').value;
+        const sorteio = input.match(/\d+/g);
         
-        const contar = (jogo) => jogo.filter(n => sorteio.includes(n.toString().padStart(2, '0'))).length;
+        if(!sorteio || sorteio.length < 5) return alert("Insira os números do sorteio para conferir!");
+        
+        const padrao = sorteio.map(n => n.padStart(2, '0'));
+        const contar = (jogo) => jogo.filter(n => padrao.includes(n)).length;
         
         document.getElementById('resQ').innerText = contar(dQuente);
         document.getElementById('resF').innerText = contar(dFrio);
         document.getElementById('resM').innerText = contar(dMisto);
+        document.getElementById('resI').innerText = contar(dIneditos);
+        
         document.getElementById('placarSimulacao').style.display = "grid";
     }
 
     function limpar() {
         document.getElementById('historico').value = "";
         document.getElementById('painelAnalise').style.display = "none";
+        document.getElementById('placarSimulacao').style.display = "none";
     }
 </script>
 </body>
