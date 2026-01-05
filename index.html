@@ -3,39 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lotomania Intelligence PRO - Sistema Completo</title>
+    <title>Lotomania Intelligence PRO - Analisador Supremo</title>
     <style>
         :root {
             --primary: #f58220; --secondary: #2c3e50; --bg: #f0f2f5;
-            --white: #ffffff; --accent: #28a745; --blue: #007bff; --purple: #6f42c1;
+            --white: #ffffff; --accent: #28a745; --purple: #6f42c1; --blue: #007bff;
         }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg); color: var(--secondary); padding: 20px; }
         .container { max-width: 1200px; margin: auto; background: var(--white); padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
         header { text-align: center; border-bottom: 3px solid var(--primary); margin-bottom: 25px; padding-bottom: 10px; }
         .section { margin-bottom: 20px; padding: 20px; border: 1px solid #e1e4e8; border-radius: 10px; }
+        textarea { width: 100%; height: 180px; border: 2px solid var(--primary); border-radius: 8px; padding: 12px; font-family: monospace; box-sizing: border-box; }
         
-        .progress-container { width: 100%; background-color: #ddd; border-radius: 5px; margin: 10px 0; display: none; }
-        .progress-bar { width: 0%; height: 25px; background-color: var(--blue); border-radius: 5px; text-align: center; line-height: 25px; color: white; font-weight: bold; transition: width 0.3s; }
-        
-        textarea { width: 100%; height: 100px; border: 2px solid #ddd; border-radius: 8px; padding: 10px; font-family: monospace; }
-        .btn-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin: 15px 0; }
-        button { padding: 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; color: white; }
-        .btn-sync { background: var(--blue); }
-        .btn-primary { background: var(--primary); }
+        .btn-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 15px 0; }
+        button { padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; transition: 0.3s; }
+        .btn-process { background: var(--primary); }
         .btn-mirror { background: var(--purple); }
         
-        .grid-main { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .game-box { background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 5px solid var(--primary); margin-bottom: 15px; }
-        .num-display { font-family: 'Courier New', monospace; font-weight: bold; font-size: 14px; color: #d46d16; background: #fff; padding: 10px; border: 1px dashed #ccc; line-height: 1.8; }
+        .grid-main { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 20px; }
+        .game-box { background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 6px solid var(--primary); margin-bottom: 15px; }
+        .num-display { font-family: 'Courier New', monospace; font-weight: bold; font-size: 15px; color: #d46d16; background: #fff; padding: 10px; border: 1px dashed #ccc; line-height: 1.8; }
         
-        /* Quadrantes */
-        .quadrante-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-        .quad-box { background: #fff; border: 1px solid #ddd; padding: 10px; text-align: center; border-radius: 5px; }
-        .viciado { background: #ffebee; border-color: #f44336; color: #d32f2f; }
-        .frio { background: #e8f5e9; border-color: #4caf50; color: #2e7d32; }
+        /* Estilos das Estatísticas de Paridade */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px; }
+        .stat-card { background: #e3f2fd; padding: 15px; border-radius: 8px; text-align: center; border: 1px solid var(--blue); }
+        .stat-label { font-size: 0.9em; color: var(--secondary); font-weight: bold; margin-bottom: 5px; }
+        .stat-val { font-size: 28px; font-weight: bold; color: var(--blue); }
 
-        .money-card { background: #fffde7; padding: 20px; border-radius: 10px; border: 2px solid #fbc02d; text-align: center; }
-        .total-lucro { font-size: 32px; font-weight: bold; color: #d32f2f; }
+        .quad-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .quad-box { border: 1px solid #ddd; padding: 10px; text-align: center; border-radius: 5px; font-size: 0.85em; background: #fff; }
+        .viciado { background: #ffebee; border-color: #f44336; color: #d32f2f; font-weight: bold; }
+        
         @media (max-width: 900px) { .grid-main { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -43,66 +41,60 @@
 
 <div class="container">
     <header>
-        <h1>Lotomania Intelligence PRO v5.0</h1>
-        <p>Busca Automática 50J | Análise de Quadrantes | Simulador de Lucro</p>
+        <h1>Lotomania Intelligence PRO</h1>
+        <p>Analisador Supremo: Paridade, Quadrantes e Frequência</p>
     </header>
 
     <div class="section">
-        <h3>1. Sincronização de Dados</h3>
-        <div class="progress-container" id="progContainer">
-            <div class="progress-bar" id="progBar">0%</div>
-        </div>
-        <textarea id="historico" placeholder="Clique no botão azul para buscar os 50 concursos mais recentes..."></textarea>
+        <h3>1. Colar Histórico (Insira os 50 Concursos)</h3>
+        <textarea id="historico" placeholder="Cole aqui os 50 sorteios (um por linha)..."></textarea>
         <div class="btn-group">
-            <button class="btn-sync" id="btnSync" onclick="buscar50Resultados()">🔄 Buscar 50 Últimos Jogos</button>
-            <button class="btn-primary" onclick="processarAnalise()">📊 Gerar Jogos Estratégicos</button>
+            <button class="btn-process" onclick="processarTudo()">📊 Analisar Tendências</button>
             <button class="btn-mirror" onclick="gerarEspelho()">🔮 Gerar Jogo Espelho</button>
         </div>
     </div>
 
-    <div id="painelAnalise" style="display:none;">
+    <div id="painel" style="display:none;">
         <div class="grid-main">
             <div>
                 <div class="section">
-                    <h3>🎯 Estratégia dos Extremos (50 Dezenas)</h3>
-                    <div class="game-box" style="border-color: var(--primary);">
-                        <strong>🔥 JOGO A (Vantagem de Frequência - Alvo 20):</strong>
+                    <h3>🎯 Sugestões Baseadas na Estatística</h3>
+                    <div class="game-box">
+                        <strong>🔥 JOGO QUENTE (Tendência de Repetição):</strong>
                         <div id="jogoQuente" class="num-display"></div>
                     </div>
                     <div class="game-box" style="border-color: var(--secondary);">
-                        <strong>🌑 JOGO B (Inéditos / Atraso - Alvo 0):</strong>
+                        <strong>🌑 JOGO INÉDITOS (Aposta no Atraso Máximo):</strong>
                         <div id="jogoIneditos" class="num-display"></div>
                     </div>
                     <div id="boxEspelho" class="game-box" style="border-color: var(--purple); display:none;">
-                        <strong>🔮 JOGO C (Espelho do B - Segurança 100%):</strong>
+                        <strong>🔮 JOGO ESPELHO (Segurança Inversa):</strong>
                         <div id="jogoEspelho" class="num-display"></div>
                     </div>
-                </div>
-
-                <div class="section">
-                    <h3>🧭 Mapa de Calor por Quadrantes</h3>
-                    <p><small>Distribuição média nos últimos 50 concursos.</small></p>
-                    <div class="quadrante-grid" id="quadrantesUI"></div>
                 </div>
             </div>
 
             <div>
-                <div class="section" style="background: #e3f2fd;">
-                    <h3>🧪 Simulador Financeiro</h3>
-                    <p>Cole um resultado real para conferir prêmios:</p>
-                    <input type="text" id="conferirSorteio" style="width: 100%; padding: 15px; border-radius: 8px; border: 1px solid #ccc; margin-bottom: 10px;" placeholder="Ex: 01 02 05 10 15 20...">
-                    <button class="btn-primary" style="width: 100%;" onclick="simularLucro()">💸 Calcular Prêmios e Lucro</button>
-
-                    <div id="resultadoFinanceiro" style="display:none; margin-top: 20px;">
-                        <div class="money-card">
-                            <strong>RESULTADO DA SIMULAÇÃO:</strong>
-                            <p>Jogo B (Inéditos): <span id="countB" style="color:var(--blue); font-weight:bold">0</span> acertos</p>
-                            <p>Jogo C (Espelho): <span id="countC" style="color:var(--blue); font-weight:bold">0</span> acertos</p>
-                            <hr>
-                            <small>Estimativa de Ganho Total:</small>
-                            <div id="totalLucro" class="total-lucro">R$ 0,00</div>
+                <div class="section">
+                    <h3>📈 Análise de Paridade (Média/Jogo)</h3>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">🔵 MÉDIA PARES</div>
+                            <div id="mediaPares" class="stat-val">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">🔴 MÉDIA ÍMPARES</div>
+                            <div id="mediaImpares" class="stat-val">0</div>
                         </div>
                     </div>
+                    <p style="font-size: 0.8em; margin-top: 10px; color: #666;">
+                        * O equilíbrio ideal da Lotomania é 10/10.
+                    </p>
+                </div>
+
+                <div class="section">
+                    <h3>🧭 Equilíbrio de Quadrantes</h3>
+                    <div class="quad-grid" id="quadContainer"></div>
                 </div>
             </div>
         </div>
@@ -110,124 +102,74 @@
 </div>
 
 <script>
-    let dIneditos = [], dEspelho = [];
+    let dIneditos = [];
 
-    async function buscar50Resultados() {
-    const btn = document.getElementById('btnSync');
-    const bar = document.getElementById('progBar');
-    const container = document.getElementById('progContainer');
-    const txt = document.getElementById('historico');
-    btn.disabled = true;
-    container.style.display = "block";
-    
-    // Usando um proxy para evitar erro de CORS/Conexão
-    const proxy = "https://api.allorigins.win/get?url=";
-    const apiUrl = encodeURIComponent("https://loteriacaixa-api.herokuapp.com/api/lotomania");
-
-        try {
-            const respInicial = await fetch(proxy + apiUrl);
-            const data = await respInicial.json();
-            const dadosIniciais = JSON.parse(data.contents);
-            let ultimo = dadosIniciais[0].concurso;
-            let acumulado = "";
-
-            for (let i = 0; i < 50; i++) {
-                try {
-                    const urlConc = encodeURIComponent(`https://loteriacaixa-api.herokuapp.com/api/lotomania/${ultimo - i}`);
-                    const r = await fetch(proxy + urlConc);
-                    const d = await r.json();
-                    const sorteio = JSON.parse(d.contents);
-                
-                    if(sorteio.dezenas) {
-                        acumulado += sorteio.dezenas.join(" ") + "\n";
-                    }
-                
-                    let p = Math.round(((i + 1) / 50) * 100);
-                    bar.style.width = p + "%";
-                    bar.innerText = `Sincronizando: ${p}%`;
-                } catch (e) { continue; }
-            }
-            txt.value = acumulado;
-            alert("Base de 50 concursos sincronizada via Proxy!");
-        } catch (error) {
-            alert("O servidor de dados está fora do ar. Por favor, cole os resultados manualmente para continuar a análise.");
-        } finally {
-            btn.disabled = false;
-        }
-    }
-
-    function processarAnalise() {
+    function processarTudo() {
         const texto = document.getElementById('historico').value;
-        const nums = texto.match(/\d+/g);
-        if (!nums || nums.length < 100) return alert("Busque os dados primeiro!");
+        const numeros = texto.match(/\b\d{1,2}\b/g);
+        
+        if (!numeros || numeros.length < 20) return alert("Insira os sorteios primeiro!");
 
+        // Considera que cada sorteio tem 20 números
+        const totalSorteios = Math.floor(numeros.length / 20);
         let freq = Array(100).fill(0);
-        let quad = [0, 0, 0, 0]; // Q1, Q2, Q3, Q4
+        let countPares = 0;
+        let countImpares = 0;
+        let quads = [0, 0, 0, 0];
 
-        nums.forEach(n => {
-            let val = parseInt(n);
-            if(val < 100) {
-                freq[val]++;
-                // Lógica de Quadrantes
-                if (val % 10 < 5 && val < 50) quad[0]++;      // Q1 (Top-Esq)
-                else if (val % 10 >= 5 && val < 50) quad[1]++; // Q2 (Top-Dir)
-                else if (val % 10 < 5 && val >= 50) quad[2]++; // Q3 (Bot-Esq)
-                else quad[3]++;                               // Q4 (Bot-Dir)
+        numeros.forEach(n => {
+            let v = parseInt(n);
+            if (v < 100) {
+                freq[v]++;
+                // Cálculo de Paridade
+                if (v % 2 === 0) {
+                    countPares++;
+                } else {
+                    countImpares++;
+                }
+                
+                // Cálculo de Quadrantes
+                if (v % 10 < 5 && v < 50) quads[0]++;
+                else if (v % 10 >= 5 && v < 50) quads[1]++;
+                else if (v % 10 < 5 && v >= 50) quads[2]++;
+                else quads[3]++;
             }
         });
 
-        // UI Quadrantes
-        const qContainer = document.getElementById('quadrantesUI');
-        const nomes = ["Q1: Superior Esq.", "Q2: Superior Dir.", "Q3: Inferior Esq.", "Q4: Inferior Dir."];
-        qContainer.innerHTML = "";
-        quad.forEach((q, i) => {
-            let media = (q / 50).toFixed(1);
-            let classe = media > 5.2 ? 'viciado' : (media < 4.8 ? 'frio' : '');
-            qContainer.innerHTML += `<div class="quad-box ${classe}"><strong>${nomes[i]}</strong><br>Média: ${media} dezenas/jogo</div>`;
+        // Atualiza a tela com as médias de Paridade
+        // Dividimos o total de pares/ímpares pelo número de concursos colados
+        document.getElementById('mediaPares').innerText = (countPares / totalSorteios).toFixed(1);
+        document.getElementById('mediaImpares').innerText = (countImpares / totalSorteios).toFixed(1);
+
+        // Atualiza UI de Quadrantes
+        const qCont = document.getElementById('quadContainer');
+        qCont.innerHTML = "";
+        const labels = ["Q1 (Superior Esq)", "Q2 (Superior Dir)", "Q3 (Inferior Esq)", "Q4 (Inferior Dir)"];
+        
+        quads.forEach((q, i) => {
+            let mediaQuad = (q / totalSorteios).toFixed(1);
+            let destaque = mediaQuad > 5.2 ? 'viciado' : '';
+            qCont.innerHTML += `<div class="quad-box ${destaque}">${labels[i]}<br><strong>Média: ${mediaQuad}</strong></div>`;
         });
 
+        // Geração dos Jogos
         let ranking = [];
-        for(let i=0; i<100; i++) ranking.push({ n: i.toString().padStart(2,'0'), f: freq[i] });
+        for(let i=0; i<100; i++) ranking.push({ d: i.toString().padStart(2,'0'), f: freq[i] });
 
-        const dQuente = [...ranking].sort((a,b) => b.f - a.f).slice(0, 50).map(x => x.n).sort();
-        dIneditos = [...ranking].sort((a,b) => a.f - b.f).slice(0, 50).map(x => x.n).sort();
+        const dQuente = [...ranking].sort((a,b) => b.f - a.f).slice(0, 50).map(x => x.d).sort();
+        dIneditos = [...ranking].sort((a,b) => a.f - b.f).slice(0, 50).map(x => x.d).sort();
 
         document.getElementById('jogoQuente').innerText = dQuente.join(" ");
         document.getElementById('jogoIneditos').innerText = dIneditos.join(" ");
-        document.getElementById('painelAnalise').style.display = "block";
+        document.getElementById('painel').style.display = "block";
     }
 
     function gerarEspelho() {
+        if (dIneditos.length === 0) return alert("Processe a análise primeiro!");
         const todas = Array.from({length: 100}, (_, i) => i.toString().padStart(2, '0'));
-        dEspelho = todas.filter(n => !dIneditos.includes(n));
-        document.getElementById('jogoEspelho').innerText = dEspelho.join(" ");
+        const espelho = todas.filter(n => !dIneditos.includes(n));
+        document.getElementById('jogoEspelho').innerText = espelho.join(" ");
         document.getElementById('boxEspelho').style.display = "block";
-    }
-
-    function simularLucro() {
-        const sorteioRaw = document.getElementById('conferirSorteio').value.match(/\d+/g);
-        if(!sorteioRaw) return alert("Insira o resultado!");
-        
-        const sorteio = sorteioRaw.map(n => n.padStart(2, '0'));
-        const acB = dIneditos.filter(n => sorteio.includes(n)).length;
-        const acC = dEspelho.length > 0 ? dEspelho.filter(n => sorteio.includes(n)).length : (20 - acB);
-
-        // Tabela de prêmios aproximados
-        const calc = (a) => {
-            if(a == 20 || a == 0) return 300000; 
-            if(a == 19) return 30000;
-            if(a == 18) return 2000;
-            if(a == 17) return 200;
-            if(a == 16) return 40;
-            if(a == 15) return 10;
-            return 0;
-        };
-
-        const total = calc(acB) + calc(acC);
-        document.getElementById('countB').innerText = acB;
-        document.getElementById('countC').innerText = acC;
-        document.getElementById('totalLucro').innerText = "R$ " + total.toLocaleString('pt-BR');
-        document.getElementById('resultadoFinanceiro').style.display = "block";
     }
 </script>
 </body>
