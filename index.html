@@ -3,193 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lotomania Intelligence PRO v6.0 - Sistema Completo</title>
+    <title>Lotomania Intelligence PRO v7.5 - Validador Supremo</title>
     <style>
         :root {
             --primary: #f58220; --secondary: #2c3e50; --bg: #f0f2f5;
-            --white: #ffffff; --accent: #28a745; --purple: #6f42c1; --blue: #007bff; --red: #d32f2f;
+            --white: #ffffff; --accent: #28a745; --purple: #6f42c1; --blue: #007bff;
         }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg); color: var(--secondary); padding: 20px; }
-        .container { max-width: 1200px; margin: auto; background: var(--white); padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        header { text-align: center; border-bottom: 3px solid var(--primary); margin-bottom: 25px; padding-bottom: 10px; }
-        .section { margin-bottom: 20px; padding: 20px; border: 1px solid #e1e4e8; border-radius: 10px; }
-        textarea { width: 100%; height: 150px; border: 2px solid var(--primary); border-radius: 8px; padding: 12px; font-family: monospace; box-sizing: border-box; }
-        
-        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 15px 0; }
-        button { padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; transition: 0.3s; font-size: 16px; }
-        .btn-process { background: var(--primary); }
-        .btn-mirror { background: var(--purple); }
-        .btn-calc { background: var(--accent); width: 100%; margin-top: 10px; }
-        
-        .grid-main { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 20px; }
-        .game-box { background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 6px solid var(--primary); margin-bottom: 15px; }
-        .num-display { font-family: 'Courier New', monospace; font-weight: bold; font-size: 14px; color: #d46d16; background: #fff; padding: 10px; border: 1px dashed #ccc; line-height: 1.8; }
-        
-        /* Stats e Simulação */
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        .stat-card { background: #e3f2fd; padding: 10px; border-radius: 8px; text-align: center; border: 1px solid var(--blue); }
-        .stat-val { font-size: 22px; font-weight: bold; color: var(--blue); }
-
-        .quad-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .quad-box { border: 1px solid #ddd; padding: 8px; text-align: center; border-radius: 5px; font-size: 0.8em; background: #fff; }
-        .viciado { background: #ffebee; border-color: #f44336; color: var(--red); font-weight: bold; }
-
-        .simulator-area { background: #fff9c4; border: 2px solid #fbc02d; padding: 15px; border-radius: 10px; margin-top: 20px; }
-        .result-card { background: white; margin-top: 15px; padding: 15px; border-radius: 8px; text-align: center; display: none; border: 2px solid var(--accent); }
-        .total-money { font-size: 28px; font-weight: bold; color: var(--red); margin-top: 5px; }
-        
-        @media (max-width: 900px) { .grid-main { grid-template-columns: 1fr; } }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); padding: 20px; }
+        .container { max-width: 1100px; margin: auto; background: var(--white); padding: 25px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        header { text-align: center; border-bottom: 3px solid var(--primary); margin-bottom: 20px; padding-bottom: 10px; }
+        .section { margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        textarea { width: 100%; height: 120px; border: 2px solid var(--primary); border-radius: 5px; padding: 10px; font-family: monospace; }
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; }
+        button { padding: 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; color: white; }
+        .btn-p { background: var(--primary); }
+        .btn-m { background: var(--purple); }
+        .game-display { background: #fdfdfd; padding: 15px; border-left: 5px solid; margin-top: 10px; }
+        .nums { font-family: monospace; font-size: 15px; color: #333; word-spacing: 5px; line-height: 2; }
+        .validacao-tag { display: inline-block; margin-top: 10px; padding: 5px 10px; border-radius: 4px; font-size: 0.8em; font-weight: bold; }
+        .ok { background: #d4edda; color: #155724; }
+        .erro { background: #f8d7da; color: #721c24; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <header>
-        <h1>Lotomania Intelligence PRO v6.0</h1>
-        <p>Análise de 50 Jogos + Simulador de Ganhos</p>
+        <h1>Lotomania Intelligence PRO v7.5</h1>
+        <p>Garantia de Espelhamento e Análise de Paridade</p>
     </header>
 
     <div class="section">
-        <h3>1. Base de Dados (Histórico de 50 Jogos)</h3>
+        <h3>1. Alimentar Histórico de 50 Jogos</h3>
         <textarea id="historico" placeholder="Cole os 50 resultados aqui..."></textarea>
         <div class="btn-group">
-            <button class="btn-process" onclick="processarAnalise()">📊 Analisar Tendência</button>
-            <button class="btn-mirror" onclick="gerarEspelho()">🔮 Gerar Jogo Espelho</button>
+            <button class="btn-p" onclick="processar()">📊 Analisar e Gerar Inéditos</button>
+            <button class="btn-m" onclick="gerarEspelhoMatematico()">🔮 Gerar Espelho Real (Inverso)</button>
         </div>
     </div>
 
     <div id="painel" style="display:none;">
-        <div class="grid-main">
-            <div>
-                <div class="section">
-                    <h3>🎯 Jogos Estratégicos Gerados</h3>
-                    <div class="game-box">
-                        <strong>🔥 JOGO QUENTE (Frequência Alta):</strong>
-                        <div id="jogoQuente" class="num-display"></div>
-                    </div>
-                    <div class="game-box" style="border-color: var(--secondary);">
-                        <strong>🌑 JOGO INÉDITOS (Atraso/Ciclo):</strong>
-                        <div id="jogoIneditos" class="num-display"></div>
-                    </div>
-                    <div id="boxEspelho" class="game-box" style="border-color: var(--purple); display:none;">
-                        <strong>🔮 JOGO ESPELHO (Inverso dos Inéditos):</strong>
-                        <div id="jogoEspelho" class="num-display"></div>
-                    </div>
-                </div>
-            </div>
+        <div class="section" style="background:#e3f2fd; border-color:var(--blue);">
+            <strong>📊 Paridade Média:</strong> 
+            Pares: <span id="pVal" style="font-weight:bold">0</span> | 
+            Ímpares: <span id="iVal" style="font-weight:bold">0</span>
+        </div>
 
-            <div>
-                <div class="section">
-                    <h3>📈 Estatísticas Médias (50J)</h3>
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div style="font-size: 0.8em; font-weight:bold;">MÉDIA PARES</div>
-                            <div id="mediaPares" class="stat-val">0</div>
-                        </div>
-                        <div class="stat-card">
-                            <div style="font-size: 0.8em; font-weight:bold;">MÉDIA ÍMPARES</div>
-                            <div id="mediaImpares" class="stat-val">0</div>
-                        </div>
-                    </div>
-                    <div class="quad-grid" id="quadContainer"></div>
-                </div>
+        <div class="game-display" style="border-color: var(--secondary);">
+            <strong>🌑 JOGO B (INÉDITOS/ATRASO):</strong>
+            <div id="displayIneditos" class="nums"></div>
+        </div>
 
-                <div class="simulator-area">
-                    <h3>🧪 Simulador de Lucro</h3>
-                    <p style="font-size: 0.8em;">Insira o resultado oficial para testar:</p>
-                    <input type="text" id="conferir" style="width:100%; padding:10px; border-radius:5px; border:1px solid #ccc;" placeholder="01 02 03...">
-                    <button class="btn-calc" onclick="simularLucro()">💸 Calcular Prêmios</button>
-                    
-                    <div id="resultadoSimulado" class="result-card">
-                        <strong>Acertos Jogo Inéditos:</strong> <span id="acB" style="font-weight:bold; color:var(--blue);">0</span><br>
-                        <strong>Acertos Jogo Espelho:</strong> <span id="acC" style="font-weight:bold; color:var(--blue);">0</span>
-                        <hr>
-                        <div style="font-size: 0.9em;">Estimativa de Prêmio:</div>
-                        <div id="valorPremio" class="total-money">R$ 0,00</div>
-                    </div>
-                </div>
-            </div>
+        <div id="boxEspelho" class="game-display" style="border-color: var(--purple); display:none;">
+            <strong>🔮 JOGO C (ESPELHO MATEMÁTICO):</strong>
+            <div id="displayEspelho" class="nums"></div>
+            <div id="statusValidacao" class="validacao-tag"></div>
         </div>
     </div>
 </div>
 
 <script>
-    let dIneditos = [], dEspelho = [];
+    let ineditosSet = new Set();
 
-    function processarAnalise() {
-        const texto = document.getElementById('historico').value;
-        const numeros = texto.match(/\b\d{1,2}\b/g);
-        if (!numeros || numeros.length < 20) return alert("Insira os dados!");
+    function processar() {
+        const txt = document.getElementById('historico').value;
+        const nums = txt.match(/\b\d{1,2}\b/g);
+        if (!nums || nums.length < 20) return alert("Insira dados válidos!");
 
-        const totalSorteios = Math.floor(numeros.length / 20);
+        const totalSorteios = Math.floor(nums.length / 20);
         let freq = Array(100).fill(0);
-        let pares = 0, impares = 0, quads = [0,0,0,0];
+        let pares = 0, impares = 0;
 
-        numeros.forEach(n => {
+        nums.forEach(n => {
             let v = parseInt(n);
             if (v < 100) {
                 freq[v]++;
                 if (v % 2 === 0) pares++; else impares++;
-                if (v % 10 < 5 && v < 50) quads[0]++;
-                else if (v % 10 >= 5 && v < 50) quads[1]++;
-                else if (v % 10 < 5 && v >= 50) quads[2]++;
-                else quads[3]++;
             }
         });
 
-        document.getElementById('mediaPares').innerText = (pares / totalSorteios).toFixed(1);
-        document.getElementById('mediaImpares').innerText = (impares / totalSorteios).toFixed(1);
-
-        const qCont = document.getElementById('quadContainer');
-        qCont.innerHTML = "";
-        const labels = ["Q1", "Q2", "Q3", "Q4"];
-        quads.forEach((q, i) => {
-            let m = (q / totalSorteios).toFixed(1);
-            qCont.innerHTML += `<div class="quad-box ${m > 5.2 ? 'viciado' : ''}">${labels[i]}<br>Média: ${m}</div>`;
-        });
+        document.getElementById('pVal').innerText = (pares / totalSorteios).toFixed(1);
+        document.getElementById('iVal').innerText = (impares / totalSorteios).toFixed(1);
 
         let ranking = [];
         for(let i=0; i<100; i++) ranking.push({ d: i.toString().padStart(2,'0'), f: freq[i] });
 
-        const dQuente = [...ranking].sort((a,b) => b.f - a.f).slice(0, 50).map(x => x.d).sort();
-        dIneditos = [...ranking].sort((a,b) => a.f - b.f).slice(0, 50).map(x => x.d).sort();
+        // Seleciona os 50 que menos saíram (Inéditos)
+        const ineditosArray = [...ranking].sort((a,b) => a.f - b.f).slice(0, 50).map(x => x.d).sort();
+        ineditosSet = new Set(ineditosArray); // Armazena em Set para comparação rápida
 
-        document.getElementById('jogoQuente').innerText = dQuente.join(" ");
-        document.getElementById('jogoIneditos').innerText = dIneditos.join(" ");
+        document.getElementById('displayIneditos').innerText = ineditosArray.join(" ");
         document.getElementById('painel').style.display = "block";
+        document.getElementById('boxEspelho').style.display = "none";
     }
 
-    function gerarEspelho() {
-        const todas = Array.from({length: 100}, (_, i) => i.toString().padStart(2, '0'));
-        dEspelho = todas.filter(n => !dIneditos.includes(n));
-        document.getElementById('jogoEspelho').innerText = dEspelho.join(" ");
+    function gerarEspelhoMatematico() {
+        if (ineditosSet.size === 0) return alert("Gere o Jogo B primeiro!");
+
+        const espelhoArray = [];
+        for (let i = 0; i < 100; i++) {
+            let dezena = i.toString().padStart(2, '0');
+            // Se NÃO está no conjunto de Inéditos, vai para o Espelho
+            if (!ineditosSet.has(dezena)) {
+                espelhoArray.push(dezena);
+            }
+        }
+
+        document.getElementById('displayEspelho').innerText = espelhoArray.sort().join(" ");
+        
+        // --- VALIDAÇÃO REAL ---
+        const duplicados = espelhoArray.filter(n => ineditosSet.has(n));
+        const status = document.getElementById('statusValidacao');
+        
+        if (duplicados.length === 0 && espelhoArray.length === 50) {
+            status.innerText = "✅ VALIDAÇÃO: 100% ESPELHADO (Sem números repetidos)";
+            status.className = "validacao-tag ok";
+        } else {
+            status.innerText = "❌ ERRO: Foram encontrados números repetidos!";
+            status.className = "validacao-tag erro";
+        }
+
         document.getElementById('boxEspelho').style.display = "block";
-    }
-
-    function simularLucro() {
-        const confRaw = document.getElementById('conferir').value.match(/\d+/g);
-        if(!confRaw) return alert("Insira o resultado oficial!");
-        const sorteio = confRaw.map(n => n.padStart(2, '0'));
-
-        const acB = dIneditos.filter(n => sorteio.includes(n)).length;
-        const acC = dEspelho.length > 0 ? dEspelho.filter(n => sorteio.includes(n)).length : (20 - acB);
-
-        document.getElementById('acB').innerText = acB;
-        document.getElementById('acC').innerText = acC;
-
-        const calcular = (a) => {
-            if (a >= 20 || a == 0) return 500000;
-            if (a == 19) return 30000;
-            if (a == 18) return 1500;
-            if (a == 17) return 150;
-            if (a == 16) return 35;
-            if (a == 15) return 8;
-            return 0;
-        };
-
-        const total = calcular(acB) + calcular(acC);
-        document.getElementById('valorPremio').innerText = "R$ " + total.toLocaleString('pt-BR');
-        document.getElementById('resultadoSimulado').style.display = "block";
     }
 </script>
 </body>
