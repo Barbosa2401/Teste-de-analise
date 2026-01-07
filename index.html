@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lotomania Intelligence PRO v10.3</title>
+    <title>Lotomania Intelligence PRO v10.4 - Full Simulator</title>
     <style>
         :root {
             --primary: #f58220; --secondary: #2c3e50; --bg: #f0f2f5;
-            --white: #ffffff; --accent: #28a745; --purple: #6f42c1; --blue: #007bff; --red: #d32f2f;
+            --white: #ffffff; --accent: #28a745; --purple: #6f42c1; --blue: #007bff; --red: #d32f2f; --gold: #ffd700;
         }
         body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); padding: 20px; color: var(--secondary); }
         .container { max-width: 1200px; margin: auto; background: var(--white); padding: 25px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
@@ -35,14 +35,24 @@
 
         .sugestao-box { background: #e8eaf6; padding: 15px; border-radius: 10px; border-left: 6px solid var(--blue); margin-top: 15px; font-weight: bold; color: #1a237e; }
         .simulador { background: #fff9c4; padding: 15px; border-radius: 10px; border: 2px solid #fbc02d; margin-top: 15px; }
+
+        /* Estilos do Novo Volante e Sorteador */
+        .volante-section { background: #fff; border: 2px solid var(--secondary); padding: 20px; border-radius: 15px; margin-top: 20px; }
+        .volante-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px; margin: 15px 0; }
+        .num-btn { padding: 10px 0; border: 1px solid #ccc; background: #fff; cursor: pointer; border-radius: 5px; font-weight: bold; transition: 0.2s; }
+        .num-btn:hover { background: #eee; }
+        .selected { background: var(--secondary) !important; color: white; border-color: var(--secondary); }
+        .machine-hit { background: var(--gold) !important; color: #000 !important; border-color: #b8860b; box-shadow: 0 0 8px var(--gold); transform: scale(1.05); z-index: 10; }
+        .draw-results { background: #f0f0f0; padding: 15px; border-radius: 10px; margin-top: 15px; display: none; text-align: center; }
+        .drawn-ball { display: inline-block; width: 30px; height: 30px; line-height: 30px; background: var(--red); color: white; border-radius: 50%; margin: 3px; font-size: 14px; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <header>
-        <h1>Lotomania Intelligence PRO v10.3</h1>
-        <p>Análise de Quadrantes e Sugestão Estratégica</p>
+        <h1>Lotomania Intelligence PRO v10.4</h1>
+        <p>Análise de Quadrantes, Volante Interativo e Simulador</p>
     </header>
 
     <div class="section">
@@ -73,6 +83,24 @@
                 <button class="btn-mirror" onclick="gerarEspelho('Misto')">🔮 Gerar Espelho</button>
                 <div id="espMisto" class="nums" style="display:none; border-color: var(--purple);"></div>
             </div>
+
+            <div class="volante-section">
+                <h3 style="text-align: center; margin-top: 0; color: var(--secondary);">🕹️ VOLANTE INTERATIVO (Marque 50 números)</h3>
+                <div style="text-align: center; font-weight: bold; margin-bottom: 10px;">
+                    Selecionados: <span id="countSim">0</span> / 50
+                </div>
+                <div class="volante-grid" id="volanteDigital"></div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-main" style="background: #666; font-size: 14px;" onclick="limparVolante()">LIMPAR VOLANTE</button>
+                    <button class="btn-main" style="background: var(--red); font-size: 14px;" onclick="simularSorteioInterno()">🎰 SIMULAR SORTEIO (20 DEZENAS)</button>
+                </div>
+                
+                <div id="drawResults" class="draw-results">
+                    <strong style="display: block; margin-bottom: 10px;">🔴 RESULTADO DO SORTEIO SIMULADO:</strong>
+                    <div id="drawnBallsContainer"></div>
+                    <div id="scoreSimulacao" style="margin-top: 15px; font-size: 20px; font-weight: bold; color: var(--accent);"></div>
+                </div>
+            </div>
         </div>
 
         <div>
@@ -84,7 +112,7 @@
             <div id="sugestaoDia" class="sugestao-box"></div>
 
             <div class="simulador">
-                <strong>🧪 CONFERIDOR RÁPIDO</strong>
+                <strong>🧪 CONFERIDOR RÁPIDO (RESULTADO OFICIAL)</strong>
                 <input type="text" id="conferir" style="width:100%; padding:10px; margin-top:10px; border:1px solid #ccc;" placeholder="Resultado oficial...">
                 <button class="btn-main" style="font-size: 14px; margin-top: 10px; background: var(--accent);" onclick="calcularPremiacao()">💰 CONFERIR ACERTOS</button>
                 <div id="detalheAcertos" style="font-size: 12px; margin-top: 10px; text-align: center; font-weight: bold;"></div>
@@ -95,6 +123,7 @@
 
 <script>
     let jogosGlobais = { Quente: [], Inedito: [], Misto: [], QuenteEsp: [], IneditoEsp: [], MistoEsp: [] };
+    let selecionadosVolante = new Set();
     
     // Definição técnica dos números por quadrante
     const dezenasPorQuad = [
@@ -103,6 +132,73 @@
         "50-54, 60-64, 70-74, 80-84, 90-94", // Q3
         "55-59, 65-69, 75-79, 85-89, 95-99"  // Q4
     ];
+
+    // INICIALIZAÇÃO DO VOLANTE DIGITAL
+    const vGrid = document.getElementById('volanteDigital');
+    for (let i = 0; i < 100; i++) {
+        let n = i.toString().padStart(2, '0');
+        let btn = document.createElement('button');
+        btn.className = 'num-btn';
+        btn.innerText = n;
+        btn.id = 'v-' + n;
+        btn.onclick = () => toggleNumeroVolante(n);
+        vGrid.appendChild(btn);
+    }
+
+    function toggleNumeroVolante(n) {
+        if (selecionadosVolante.has(n)) {
+            selecionadosVolante.delete(n);
+            document.getElementById('v-' + n).classList.remove('selected');
+        } else {
+            if (selecionadosVolante.size >= 50) return alert("Limite de 50 números atingido!");
+            selecionadosVolante.add(n);
+            document.getElementById('v-' + n).classList.add('selected');
+        }
+        document.getElementById('countSim').innerText = selecionadosVolante.size;
+    }
+
+    function limparVolante() {
+        selecionadosVolante.clear();
+        document.querySelectorAll('.num-btn').forEach(b => b.classList.remove('selected', 'machine-hit'));
+        document.getElementById('countSim').innerText = "0";
+        document.getElementById('drawResults').style.display = "none";
+    }
+
+    function simularSorteioInterno() {
+        if (selecionadosVolante.size < 50) return alert("Selecione 50 números no volante primeiro!");
+        
+        // Resetar marcas de sorteio anterior
+        document.querySelectorAll('.num-btn').forEach(b => b.classList.remove('machine-hit'));
+        
+        let sorteados = [];
+        while (sorteados.length < 20) {
+            let n = Math.floor(Math.random() * 100).toString().padStart(2, '0');
+            if (!sorteados.includes(n)) sorteados.push(n);
+        }
+        sorteados.sort();
+
+        // Mostrar na tela
+        const container = document.getElementById('drawnBallsContainer');
+        container.innerHTML = sorteados.map(n => `<span class="drawn-ball">${n}</span>`).join('');
+        
+        let acertosVolante = 0;
+        let acertosQ = 0, acertosI = 0, acertosM = 0;
+
+        sorteados.forEach(n => {
+            document.getElementById('v-' + n).classList.add('machine-hit');
+            if (selecionadosVolante.has(n)) acertosVolante++;
+            if (jogosGlobais.Quente.includes(n)) acertosQ++;
+            if (jogosGlobais.Inedito.includes(n)) acertosI++;
+            if (jogosGlobais.Misto.includes(n)) acertosM++;
+        });
+
+        document.getElementById('drawResults').style.display = "block";
+        document.getElementById('scoreSimulacao').innerHTML = `
+            Seu Volante: ${acertosVolante} acertos<br>
+            <small style="font-size: 14px; color: #666">
+                (Q: ${acertosQ} | I: ${acertosI} | M: ${acertosM})
+            </small>`;
+    }
 
     function formatarDezenasHTML(arrayDezenas) {
         return arrayDezenas.map(d => `<span class="num-ball" data-num="${d}">${d}</span>`).join(" ");
@@ -147,12 +243,10 @@
                 </div>`;
         });
 
-        // Sugestão do Dia
         document.getElementById('sugestaoDia').innerHTML = `
             🎯 SUGESTÃO: O quadrante <u>${qViciado}</u> está com força máxima. Foque nele para o Jogo Principal. 
             O <u>${qFrio}</u> está frio, excelente para buscar os 0 pontos no Espelho!`;
 
-        // Geração de Jogos (Mesma lógica v10.2)
         let ranking = [];
         for(let k=0; k<100; k++) ranking.push({ d: k.toString().padStart(2,'0'), f: freq[k] });
         jogosGlobais.Quente = [...ranking].sort((a,b) => b.f - a.f).slice(0, 50).map(x => x.d).sort();
@@ -175,7 +269,6 @@
     function gerarEspelho(tipo) {
         const todas = Array.from({length: 100}, (_, k) => k.toString().padStart(2, '0'));
         const esp = todas.filter(n => !jogosGlobais[tipo].includes(n)).sort();
-        jogosGlobais[tipo + "Esp"] = esp;
         const div = document.getElementById('esp' + tipo);
         div.innerHTML = "<strong>ESPELHO:</strong> " + formatarDezenasHTML(esp);
         div.style.display = "block";
@@ -185,8 +278,15 @@
         const conf = document.getElementById('conferir').value.match(/\d+/g);
         if(!conf) return alert("Insira o resultado!");
         const sorteio = conf.map(n => n.padStart(2, '0'));
+        
+        // Limpar hits anteriores
         document.querySelectorAll('.num-ball').forEach(el => el.classList.remove('hit'));
-        sorteio.forEach(num => { document.querySelectorAll(`.num-ball[data-num="${num}"]`).forEach(el => el.classList.add('hit')); });
+        
+        // Marcar novos hits
+        sorteio.forEach(num => { 
+            document.querySelectorAll(`.num-ball[data-num="${num}"]`).forEach(el => el.classList.add('hit')); 
+        });
+
         const contar = (j) => j.length > 0 ? j.filter(n => sorteio.includes(n)).length : 0;
         const ac = { Q: contar(jogosGlobais.Quente), I: contar(jogosGlobais.Inedito), M: contar(jogosGlobais.Misto) };
         document.getElementById('detalheAcertos').innerHTML = `Acertos -> Q: ${ac.Q} | I: ${ac.I} | M: ${ac.M}`;
